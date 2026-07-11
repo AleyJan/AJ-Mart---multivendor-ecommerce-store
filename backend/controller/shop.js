@@ -140,12 +140,8 @@ router.get(
 router.get(
   "/logout",
   catchAsyncErrors(async (req, res, next) => {
-    res.cookie("seller_token", null, {
-      expires: new Date(Date.now()),
-      httpOnly: true,
-      sameSite: "lax",
-      secure: false,
-    });
+    const { clearCookieOptions } = require("../utils/cookieOptions");
+    res.cookie("seller_token", null, clearCookieOptions);
     res.status(201).json({ success: true, message: "Log out successful!" });
   })
 );

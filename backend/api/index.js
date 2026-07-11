@@ -7,9 +7,11 @@ const app = require("../app");
 const connectDatabase = require("../db/Database");
 const User = require("../model/user");
 
-// Runs once per cold start; Vercel reuses warm instances so this won't
-// reconnect or re-seed on every request.
-connectDatabase().then(async () => {
+let seeded = false;
+
+const seedAdmin = async () => {
+  if (seeded) return;
+  seeded = true;
   try {
     if (!process.env.ADMIN_EMAIL) return;
     const existing = await User.findOne({ email: process.env.ADMIN_EMAIL });
@@ -25,7 +27,20 @@ connectDatabase().then(async () => {
         },
       });
     }
-  } catch (_) {}
-});
+  } catch (_) {
+    seeded = false;
+  }
+};
 
-module.exports = app;
+module.exports = async (req, res) => {
+  try {
+    await connectDatabase();
+  } catch (err) {
+    console.error("DB connection failed:", err.message);
+    return res
+      .status(503)
+      .json({ success: false, message: "Database unavailable" });
+  }
+  seedAdmin();
+  return app(req, res);
+};

@@ -12,11 +12,13 @@ export const normalizeProduct = (p) => ({
   image_Url:
     p.images && p.images.length ? p.images.map(toImage) : [{ url: "" }],
   shop: {
+    _id: p.shop?._id,
     name: p.shop?.name,
     shop_avatar: {
       url: imageUrl(p.shop?.avatar?.url),
     },
     ratings: p.shop?.ratings || 0,
+    createdAt: p.shop?.createdAt,
   },
   originalPrice: p.originalPrice || null,
   discountPrice: p.discountPrice,

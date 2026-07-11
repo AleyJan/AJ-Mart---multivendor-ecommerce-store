@@ -22,13 +22,28 @@ const ProductDetailsPage = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  const shopKey = data?.shop?._id || data?.shopId || data?.shop?.name;
+  const shopProducts = shopKey
+    ? allProducts.filter(
+        (p) => (p.shop?._id || p.shopId || p.shop?.name) === shopKey
+      )
+    : [];
+  const totalReviews = shopProducts.reduce(
+    (acc, p) => acc + (p.reviews?.length || 0),
+    0
+  );
+
   return (
     <div>
       <Header />
       <ProductDetails data={data} />
       {data ? (
         <div className={`${styles.section} mt-5`}>
-          <ProductDetailsInfo data={data} />
+          <ProductDetailsInfo
+            data={data}
+            totalProducts={shopProducts.length}
+            totalReviews={totalReviews}
+          />
         </div>
       ) : null}
       {data ? <SuggestedProduct data={data} /> : null}

@@ -4,8 +4,16 @@ import styles from "../../styles/styles";
 import Ratings from "./Ratings";
 import { imageUrl } from "../../utils/imageUrl";
 
-const ProductDetailsInfo = ({ data }) => {
+const ProductDetailsInfo = ({ data, totalProducts, totalReviews }) => {
   const [active, setActive] = useState(1);
+
+  const joinedOn = data?.shop?.createdAt
+    ? new Date(data.shop.createdAt).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "—";
 
   return (
     <div className="bg-[#f5f6fb] px-3 800px:px-10 py-2 rounded">
@@ -118,15 +126,15 @@ const ProductDetailsInfo = ({ data }) => {
           <div className="w-full 800px:w-[50%] mt-5 800px:mt-0 800px:flex flex-col items-end">
             <div className="text-left">
               <h5 className="font-[600] text-[14px] 800px:text-[16px]">
-                Joined on:{" "}
-                <span className="font-[500]">14 March, 2023</span>
+                Joined on: <span className="font-[500]">{joinedOn}</span>
               </h5>
               <h5 className="font-[600] pt-3 text-[14px] 800px:text-[16px]">
                 Total Products:{" "}
-                <span className="font-[500]">{data.stock || 10}</span>
+                <span className="font-[500]">{totalProducts ?? 0}</span>
               </h5>
               <h5 className="font-[600] pt-3 text-[14px] 800px:text-[16px]">
-                Total Reviews: <span className="font-[500]">324</span>
+                Total Reviews:{" "}
+                <span className="font-[500]">{totalReviews ?? 0}</span>
               </h5>
               <Link to={`/shop/preview/${encodeURIComponent(data.shop.name)}`}>
                 <div className={`${styles.button} !rounded-[4px] !h-[39.5px] mt-3`}>

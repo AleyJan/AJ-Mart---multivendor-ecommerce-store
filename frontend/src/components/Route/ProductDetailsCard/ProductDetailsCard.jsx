@@ -118,7 +118,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                       </h3>
                     </Link>
                     <h5 className="pb-3 text-[14px] 800px:text-[15px]">
-                      ({data.shop.ratings}) Ratings
+                      ({(data.shop.ratings ?? 0).toFixed(1)}/5) Ratings
                     </h5>
                   </div>
                 </div>

@@ -28,23 +28,21 @@ const ProductDetailsPage = () => {
         (p) => (p.shop?._id || p.shopId || p.shop?.name) === shopKey
       )
     : [];
-  const allShopReviews = shopProducts.flatMap((p) => p.reviews || []);
-  const totalReviews = allShopReviews.length;
-  const shopRating = totalReviews
-    ? allShopReviews.reduce((acc, r) => acc + (r.rating || 0), 0) / totalReviews
-    : 0;
+  const totalReviews = shopProducts.reduce(
+    (acc, p) => acc + (p.reviews?.length || 0),
+    0
+  );
 
   return (
     <div>
       <Header />
-      <ProductDetails data={data} shopRating={shopRating} />
+      <ProductDetails data={data} />
       {data ? (
         <div className={`${styles.section} mt-5`}>
           <ProductDetailsInfo
             data={data}
             totalProducts={shopProducts.length}
             totalReviews={totalReviews}
-            shopRating={shopRating}
           />
         </div>
       ) : null}

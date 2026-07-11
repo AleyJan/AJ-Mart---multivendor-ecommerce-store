@@ -1,18 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { shopData, productData } from "../../static/data";
 import { server } from "../../server";
 import { imageUrl } from "../../utils/imageUrl";
 
-const ShopInfo = ({ shopName, shop: shopProp, products: productsProp, isOwner }) => {
+const ShopInfo = ({ shopName, shop, products: productsProp, isOwner }) => {
   const navigate = useNavigate();
-  // `shopProp` = a full seller object (logged-in seller); otherwise look up a
-  // pre-seeded shop by name.
-  const shop = shopProp || shopData.find((s) => s.name === shopName);
   const name = shop?.name || shopName;
-  // `productsProp` = the seller's real products (backend); otherwise pre-seeded.
-  const products = productsProp || productData.filter((p) => p.shop.name === name);
+  const products = productsProp || [];
 
   const logoutHandler = () => {
     axios
@@ -27,7 +22,21 @@ const ShopInfo = ({ shopName, shop: shopProp, products: productsProp, isOwner })
 
   const avatar = shop?.avatar?.url
     ? imageUrl(shop.avatar.url)
-    : products[0]?.shop.shop_avatar.url || "https://cdn.simpleicons.org/shopify";
+    : products[0]?.shop?.shop_avatar?.url ||
+      "https://cdn.simpleicons.org/shopify";
+
+  const allReviews = products.flatMap((p) => p.reviews || []);
+  const shopRating = allReviews.length
+    ? allReviews.reduce((a, r) => a + (r.rating || 0), 0) / allReviews.length
+    : null;
+
+  const joinedOn = shop?.createdAt
+    ? new Date(shop.createdAt).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "-";
 
   return (
     <div>
@@ -62,11 +71,13 @@ const ShopInfo = ({ shopName, shop: shopProp, products: productsProp, isOwner })
       </div>
       <div className="p-3">
         <h5 className="font-[600]">Shop Ratings</h5>
-        <h4 className="text-[#000000b0]">{shop?.ratings ?? "-"}/5</h4>
+        <h4 className="text-[#000000b0]">
+          {shopRating != null ? `${shopRating.toFixed(1)}/5` : "-/5"}
+        </h4>
       </div>
       <div className="p-3">
         <h5 className="font-[600]">Joined On</h5>
-        <h4 className="text-[#000000b0]">{shop?.createdAt || "-"}</h4>
+        <h4 className="text-[#000000b0]">{joinedOn}</h4>
       </div>
 
       {isOwner ? (

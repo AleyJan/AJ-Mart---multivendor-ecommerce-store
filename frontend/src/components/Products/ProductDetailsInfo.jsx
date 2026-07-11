@@ -4,7 +4,7 @@ import styles from "../../styles/styles";
 import Ratings from "./Ratings";
 import { imageUrl } from "../../utils/imageUrl";
 
-const ProductDetailsInfo = ({ data, totalProducts, totalReviews }) => {
+const ProductDetailsInfo = ({ data, totalProducts, totalReviews, shopRating }) => {
   const [active, setActive] = useState(1);
 
   const joinedOn = data?.shop?.createdAt
@@ -113,7 +113,7 @@ const ProductDetailsInfo = ({ data, totalProducts, totalReviews }) => {
                   </h3>
                 </Link>
                 <h5 className="pb-2 text-[15px]">
-                  ({data.shop.ratings}/5) Ratings
+                  ({(shopRating ?? data.shop.ratings ?? 0).toFixed(1)}/5) Ratings
                 </h5>
               </div>
             </div>

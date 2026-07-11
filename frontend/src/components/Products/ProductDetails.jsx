@@ -15,7 +15,7 @@ import { addToWishlist, removeFromWishlist } from "../../redux/actions/wishlist"
 import { addTocart } from "../../redux/actions/cart";
 import { server } from "../../server";
 
-const ProductDetails = ({ data }) => {
+const ProductDetails = ({ data, shopRating }) => {
   const { wishlist } = useSelector((state) => state.wishlist);
   const { cart } = useSelector((state) => state.cart);
   const { user, isAuthenticated } = useSelector((state) => state.user);
@@ -192,7 +192,7 @@ const ProductDetails = ({ data }) => {
                     </h3>
                   </Link>
                   <h5 className="pb-1 text-[14px] 800px:text-[15px]">
-                    ({data.shop.ratings}) Ratings
+                    ({(shopRating ?? data.shop.ratings ?? 0).toFixed(1)}/5) Ratings
                   </h5>
                 </div>
                 <div

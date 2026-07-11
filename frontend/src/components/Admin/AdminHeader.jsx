@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { backend_url } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 
 const AdminHeader = () => {
   const { user } = useSelector((state) => state.user);
   const avatar = user?.avatar?.url
-    ? `${backend_url}${user.avatar.url}`
+    ? imageUrl(user.avatar.url)
     : "https://cdn.simpleicons.org/shopify";
 
   return (

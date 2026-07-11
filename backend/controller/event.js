@@ -1,11 +1,10 @@
 const express = require("express");
-const path = require("path");
-const fs = require("fs");
 const router = express.Router();
 
 const Event = require("../model/event");
 const Shop = require("../model/shop");
 const { upload } = require("../multer");
+const { uploadBuffer, destroy } = require("../utils/cloudinary");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const { isSeller } = require("../middleware/auth");
@@ -23,10 +22,9 @@ router.post(
       }
 
       const files = req.files || [];
-      const imageUrls = files.map((file) => ({
-        public_id: file.filename,
-        url: `uploads/${file.filename}`,
-      }));
+      const imageUrls = await Promise.all(
+        files.map((file) => uploadBuffer(file.buffer, "events"))
+      );
 
       const eventData = { ...req.body };
       eventData.images = imageUrls;
@@ -62,10 +60,11 @@ router.delete(
       return next(new ErrorHandler("Event not found with this id!", 404));
     }
 
-    (event.images || []).forEach((img) => {
-      const filepath = path.join(__dirname, "../uploads", img.public_id);
-      fs.unlink(filepath, () => {});
-    });
+    await Promise.all(
+      (event.images || []).map((img) =>
+        img.public_id ? destroy(img.public_id).catch(() => {}) : null
+      )
+    );
 
     await event.deleteOne();
     res.status(200).json({ success: true, message: "Event deleted successfully!" });

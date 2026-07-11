@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { AiOutlineCamera } from "react-icons/ai";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { backend_url, server } from "../../server";
+import { server } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 import styles from "../../styles/styles";
 import { getAllOrdersOfUser } from "../../redux/actions/order";
 
@@ -57,7 +58,7 @@ const ProfileContent = ({ active }) => {
           <div className="flex justify-center w-full">
             <div className="relative">
               <img
-                src={`${backend_url}${user?.avatar?.url}`}
+                src={imageUrl(user?.avatar?.url)}
                 className="w-[150px] h-[150px] rounded-full object-cover border-[3px] border-[#3ad132]"
                 alt=""
               />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "../../styles/styles";
 import Ratings from "./Ratings";
-import { backend_url } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 
 const ProductDetailsInfo = ({ data }) => {
   const [active, setActive] = useState(1);
@@ -61,7 +61,7 @@ const ProductDetailsInfo = ({ data }) => {
                 <img
                   src={
                     review.user?.avatar?.url
-                      ? `${backend_url}${review.user.avatar.url}`
+                      ? imageUrl(review.user.avatar.url)
                       : "https://cdn.simpleicons.org/shopify"
                   }
                   alt=""

@@ -1,11 +1,10 @@
 const express = require("express");
-const path = require("path");
-const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 const User = require("../model/user");
 const { upload } = require("../multer");
+const { uploadBuffer } = require("../utils/cloudinary");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const sendMail = require("../utils/sendMail");
@@ -24,35 +23,22 @@ router.post("/create-user", upload.single("file"), async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    const userEmail = await User.findOne({ email });
-
-    // If the email already exists, remove the just-uploaded file and stop.
-    if (userEmail) {
-      if (req.file) {
-        const filepath = path.join(__dirname, "../uploads", req.file.filename);
-        fs.unlink(filepath, (err) => {
-          if (err) console.log("Error deleting file:", err);
-        });
-      }
-      return next(new ErrorHandler("User already exists", 400));
-    }
-
     if (!req.file) {
       return next(new ErrorHandler("Please upload a profile picture", 400));
     }
 
-    // Use forward slashes so the URL works when served over HTTP (path.join
-    // would produce backslashes on Windows).
-    const fileUrl = `uploads/${req.file.filename}`;
+    const userEmail = await User.findOne({ email });
+    if (userEmail) {
+      return next(new ErrorHandler("User already exists", 400));
+    }
+
+    const avatar = await uploadBuffer(req.file.buffer, "avatars");
 
     const user = {
       name,
       email,
       password,
-      avatar: {
-        public_id: req.file.filename,
-        url: fileUrl,
-      },
+      avatar,
     };
 
     const activationToken = createActivationToken(user);

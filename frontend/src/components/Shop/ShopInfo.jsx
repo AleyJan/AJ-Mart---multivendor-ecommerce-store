@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { shopData, productData } from "../../static/data";
-import { server, backend_url } from "../../server";
+import { server } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 
 const ShopInfo = ({ shopName, shop: shopProp, products: productsProp, isOwner }) => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const ShopInfo = ({ shopName, shop: shopProp, products: productsProp, isOwner })
   };
 
   const avatar = shop?.avatar?.url
-    ? `${backend_url}${shop.avatar.url}`
+    ? imageUrl(shop.avatar.url)
     : products[0]?.shop.shop_avatar.url || "https://cdn.simpleicons.org/shopify";
 
   return (

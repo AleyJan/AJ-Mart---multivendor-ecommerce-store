@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AiOutlineDelete } from "react-icons/ai";
 import { toast } from "react-toastify";
 import { getAllEventsShop, deleteEvent } from "../../redux/actions/event";
-import { backend_url } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 
 const AllEvents = () => {
   const { events, isLoading } = useSelector((state) => state.events);
@@ -35,11 +35,7 @@ const AllEvents = () => {
               className="bg-white rounded-lg shadow-sm p-3 relative"
             >
               <img
-                src={
-                  item.images?.[0]?.url
-                    ? `${backend_url}${item.images[0].url}`
-                    : ""
-                }
+                src={imageUrl(item.images?.[0]?.url)}
                 alt=""
                 className="w-full h-[150px] object-contain"
               />

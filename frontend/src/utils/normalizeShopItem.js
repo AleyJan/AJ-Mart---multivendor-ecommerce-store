@@ -1,8 +1,6 @@
-import { backend_url } from "../server";
+import { imageUrl } from "./imageUrl";
 
-const toImage = (img) => ({
-  url: img?.url?.startsWith("http") ? img.url : `${backend_url}${img?.url || ""}`,
-});
+const toImage = (img) => ({ url: imageUrl(img?.url) });
 
 // Map a backend product to the shape ProductCard/ProductDetails expect.
 export const normalizeProduct = (p) => ({
@@ -16,9 +14,7 @@ export const normalizeProduct = (p) => ({
   shop: {
     name: p.shop?.name,
     shop_avatar: {
-      url: p.shop?.avatar?.url
-        ? `${backend_url}${p.shop.avatar.url}`
-        : "",
+      url: imageUrl(p.shop?.avatar?.url),
     },
     ratings: p.shop?.ratings || 0,
   },

@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Messages = require("../model/messages");
 const { upload } = require("../multer");
+const { uploadBuffer } = require("../utils/cloudinary");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
@@ -19,10 +20,7 @@ router.post(
       };
 
       if (req.file) {
-        messageData.images = {
-          public_id: req.file.filename,
-          url: `uploads/${req.file.filename}`,
-        };
+        messageData.images = await uploadBuffer(req.file.buffer, "messages");
       }
 
       const message = new Messages(messageData);

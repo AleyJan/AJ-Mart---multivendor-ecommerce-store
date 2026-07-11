@@ -4,12 +4,12 @@ import { MdOutlineLocalOffer } from "react-icons/md";
 import { FiPackage, FiShoppingBag } from "react-icons/fi";
 import { BiMessageSquareDetail } from "react-icons/bi";
 import { useSelector } from "react-redux";
-import { backend_url } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 
 const DashboardHeader = () => {
   const { seller } = useSelector((state) => state.seller);
   const avatar = seller?.avatar?.url
-    ? `${backend_url}${seller.avatar.url}`
+    ? imageUrl(seller.avatar.url)
     : "https://cdn.simpleicons.org/shopify";
 
   return (

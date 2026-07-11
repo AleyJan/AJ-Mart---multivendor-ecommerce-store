@@ -1,7 +1,8 @@
 import { useSelector } from "react-redux";
 import axios from "axios";
 import Inbox from "../Messaging/Inbox";
-import { server, backend_url } from "../../server";
+import { server } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 
 const DashboardMessages = () => {
   const { seller } = useSelector((state) => state.seller);
@@ -10,9 +11,7 @@ const DashboardMessages = () => {
   const fetchOther = (userId) =>
     axios.get(`${server}/user/user-info/${userId}`).then((res) => ({
       name: res.data.user?.name,
-      avatar: res.data.user?.avatar?.url
-        ? `${backend_url}${res.data.user.avatar.url}`
-        : null,
+      avatar: res.data.user?.avatar?.url ? imageUrl(res.data.user.avatar.url) : null,
     }));
 
   return (

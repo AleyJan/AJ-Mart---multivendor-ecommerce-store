@@ -1,12 +1,11 @@
 const express = require("express");
-const path = require("path");
-const fs = require("fs");
 const router = express.Router();
 
 const Product = require("../model/product");
 const Shop = require("../model/shop");
 const Order = require("../model/order");
 const { upload } = require("../multer");
+const { uploadBuffer, destroy } = require("../utils/cloudinary");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const { isSeller, isAuthenticated, isAdmin } = require("../middleware/auth");
@@ -24,10 +23,9 @@ router.post(
       }
 
       const files = req.files || [];
-      const imageUrls = files.map((file) => ({
-        public_id: file.filename,
-        url: `uploads/${file.filename}`,
-      }));
+      const imageUrls = await Promise.all(
+        files.map((file) => uploadBuffer(file.buffer, "products"))
+      );
 
       const productData = { ...req.body };
       productData.images = imageUrls;
@@ -63,11 +61,11 @@ router.delete(
       return next(new ErrorHandler("Product not found with this id!", 404));
     }
 
-    // remove image files
-    (product.images || []).forEach((img) => {
-      const filepath = path.join(__dirname, "../uploads", img.public_id);
-      fs.unlink(filepath, () => {});
-    });
+    await Promise.all(
+      (product.images || []).map((img) =>
+        img.public_id ? destroy(img.public_id).catch(() => {}) : null
+      )
+    );
 
     await product.deleteOne();
     res.status(200).json({ success: true, message: "Product deleted successfully!" });

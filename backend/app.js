@@ -1,7 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const path = require("path");
 
 const app = express();
 
@@ -17,9 +16,6 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve uploaded images statically
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // config
 if (process.env.NODE_ENV !== "PRODUCTION") {

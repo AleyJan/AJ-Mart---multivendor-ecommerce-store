@@ -10,7 +10,7 @@ import { RxCross1 } from "react-icons/rx";
 import styles from "../../styles/styles";
 import { categoriesData } from "../../static/data";
 import { useCatalogProducts } from "../../utils/catalog";
-import { backend_url } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 import DropDown from "../Route/DropDown";
 import Navbar from "../Route/Navbar";
 import Cart from "../cart/Cart";
@@ -172,7 +172,7 @@ AJ MART
               {isAuthenticated ? (
                 <Link to="/profile">
                   <img
-                    src={`${backend_url}${user?.avatar?.url}`}
+                    src={imageUrl(user?.avatar?.url)}
                     className="w-[35px] h-[35px] rounded-full object-cover border-2 border-[#3bc177]"
                     alt=""
                   />
@@ -292,7 +292,7 @@ AJ MART
                 {isAuthenticated ? (
                   <Link to="/profile" onClick={() => setOpen(false)}>
                     <img
-                      src={`${backend_url}${user?.avatar?.url}`}
+                      src={imageUrl(user?.avatar?.url)}
                       alt=""
                       className="w-[60px] h-[60px] rounded-full border-[3px] border-[#0eae88] object-cover"
                     />

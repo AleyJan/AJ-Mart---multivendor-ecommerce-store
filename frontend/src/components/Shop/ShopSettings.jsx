@@ -3,7 +3,8 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { AiOutlineCamera } from "react-icons/ai";
-import { server, backend_url } from "../../server";
+import { server } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 
 const ShopSettings = () => {
   const { seller } = useSelector((state) => state.seller);
@@ -15,7 +16,7 @@ const ShopSettings = () => {
   const [zipCode, setZipcode] = useState(seller?.zipCode || "");
 
   const avatarUrl = seller?.avatar?.url
-    ? `${backend_url}${seller.avatar.url}`
+    ? imageUrl(seller.avatar.url)
     : "https://cdn.simpleicons.org/shopify";
 
   const handleImage = async (e) => {

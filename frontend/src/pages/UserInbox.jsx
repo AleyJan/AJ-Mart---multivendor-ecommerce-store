@@ -3,7 +3,8 @@ import axios from "axios";
 import Header from "../components/Layout/Header";
 import Inbox from "../components/Messaging/Inbox";
 import styles from "../styles/styles";
-import { server, backend_url } from "../server";
+import { server } from "../server";
+import { imageUrl } from "../utils/imageUrl";
 
 const UserInbox = () => {
   const { user } = useSelector((state) => state.user);
@@ -12,9 +13,7 @@ const UserInbox = () => {
   const fetchOther = (sellerId) =>
     axios.get(`${server}/shop/get-shop-info/${sellerId}`).then((res) => ({
       name: res.data.shop?.name,
-      avatar: res.data.shop?.avatar?.url
-        ? `${backend_url}${res.data.shop.avatar.url}`
-        : null,
+      avatar: res.data.shop?.avatar?.url ? imageUrl(res.data.shop.avatar.url) : null,
     }));
 
   return (

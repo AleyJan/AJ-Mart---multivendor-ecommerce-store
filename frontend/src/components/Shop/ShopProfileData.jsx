@@ -3,7 +3,7 @@ import ProductCard from "../Route/ProductCard/ProductCard";
 import EventCard from "../Events/EventCard";
 import Ratings from "../Products/Ratings";
 import { productData, eventData } from "../../static/data";
-import { backend_url } from "../../server";
+import { imageUrl } from "../../utils/imageUrl";
 
 const ShopProfileData = ({ shopName, products: productsProp, events: eventsProp }) => {
   const [active, setActive] = useState(1);
@@ -75,7 +75,7 @@ const ShopProfileData = ({ shopName, products: productsProp, events: eventsProp 
                 <img
                   src={
                     review.user?.avatar?.url
-                      ? `${backend_url}${review.user.avatar.url}`
+                      ? imageUrl(review.user.avatar.url)
                       : "https://cdn.simpleicons.org/shopify"
                   }
                   alt=""

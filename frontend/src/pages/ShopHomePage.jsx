@@ -7,26 +7,28 @@ import styles from "../styles/styles";
 import { getAllProductsShop } from "../redux/actions/product";
 import { getAllEventsShop } from "../redux/actions/event";
 import { normalizeProduct, normalizeEvent } from "../utils/normalizeShopItem";
+import { useSellerAccess } from "../routes/useSessions";
 
 const ShopHomePage = () => {
-  const { seller, isSeller, isLoading } = useSelector((state) => state.seller);
+  const { seller } = useSelector((state) => state.seller);
   const { products } = useSelector((state) => state.products);
   const { events } = useSelector((state) => state.events);
+  const { valid, resolving } = useSellerAccess();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !isSeller) navigate("/shop-login");
-  }, [isLoading, isSeller, navigate]);
+    if (!resolving && !valid) navigate("/shop-login");
+  }, [resolving, valid, navigate]);
 
   useEffect(() => {
-    if (seller?._id) {
+    if (valid && seller?._id) {
       dispatch(getAllProductsShop(seller._id));
       dispatch(getAllEventsShop(seller._id));
     }
-  }, [dispatch, seller]);
+  }, [dispatch, valid, seller]);
 
-  if (isLoading || !seller) return null;
+  if (resolving || !valid || !seller) return null;
 
   const normProducts = (products || []).map(normalizeProduct);
   const normEvents = (events || []).map(normalizeEvent);

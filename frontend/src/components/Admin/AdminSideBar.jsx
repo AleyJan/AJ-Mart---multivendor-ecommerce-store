@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { RxDashboard } from "react-icons/rx";
 import { FiShoppingBag, FiUsers, FiPackage } from "react-icons/fi";
-import { MdStore, MdOutlinePayment } from "react-icons/md";
+import { MdStore, MdOutlinePayment, MdOutlineMailOutline } from "react-icons/md";
 
 const items = [
   { id: 1, title: "Dashboard", url: "/admin/dashboard", Icon: RxDashboard },
@@ -14,6 +14,12 @@ const items = [
     title: "Withdraw Requests",
     url: "/admin-withdraw-request",
     Icon: MdOutlinePayment,
+  },
+  {
+    id: 7,
+    title: "Subscribers",
+    url: "/admin-subscribers",
+    Icon: MdOutlineMailOutline,
   },
 ];
 

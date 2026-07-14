@@ -3,11 +3,48 @@ const router = express.Router();
 
 const Event = require("../model/event");
 const Shop = require("../model/shop");
+const SubscribedEmail = require("../model/subscriber");
 const { upload } = require("../multer");
 const { uploadBuffer, destroy } = require("../utils/cloudinary");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
+const sendMail = require("../utils/sendMail");
 const { isSeller } = require("../middleware/auth");
+
+// Best-effort: email every newsletter subscriber about a new event.
+const notifySubscribers = async (event, shop) => {
+  const subscribers = await SubscribedEmail.find().select("email");
+  if (!subscribers.length) return;
+
+  const base = process.env.FRONTEND_URL || "";
+  const eventsUrl = `${base}/events`;
+
+  await Promise.allSettled(
+    subscribers.map((s) => {
+      const unsubUrl = `${base}/unsubscribe?email=${encodeURIComponent(
+        s.email
+      )}`;
+      const html = `
+        <h2>New event from ${shop.name}!</h2>
+        <p><b>${event.name}</b> is now live${
+        event.discountPrice ? ` for just $${event.discountPrice}` : ""
+      }.</p>
+        <p>${event.description || ""}</p>
+        <a href="${eventsUrl}" style="display:inline-block;padding:10px 20px;background:#3321c8;color:#fff;text-decoration:none;border-radius:5px;">View Event</a>
+        <p style="font-size:12px;color:#888;margin-top:24px;">
+          You received this because you subscribed to AJ MART.
+          <a href="${unsubUrl}">Unsubscribe</a>
+        </p>
+      `;
+      return sendMail({
+        email: s.email,
+        subject: `New event from ${shop.name}: ${event.name}`,
+        message: `${shop.name} just launched a new event "${event.name}". See it here: ${eventsUrl}\n\nUnsubscribe: ${unsubUrl}`,
+        html,
+      });
+    })
+  );
+};
 
 // -------------------- CREATE EVENT --------------------
 router.post(
@@ -31,6 +68,13 @@ router.post(
       eventData.shop = shop;
 
       const event = await Event.create(eventData);
+
+      // notify newsletter subscribers (don't fail the request if mail breaks)
+      try {
+        await notifySubscribers(event, shop);
+      } catch (e) {
+        console.log("Subscriber notification failed:", e.message);
+      }
 
       res.status(201).json({ success: true, event });
     } catch (error) {

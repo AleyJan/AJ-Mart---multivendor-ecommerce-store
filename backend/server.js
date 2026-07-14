@@ -38,9 +38,17 @@ async function seedAdmin() {
 const server = http.createServer(app);
 
 // -------------------- SOCKET.IO (real-time chat) --------------------
+const socketOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173",
+  ...(process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+];
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: socketOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },

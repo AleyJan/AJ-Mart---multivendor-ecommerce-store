@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "../components/Layout/Header";
 import Footer from "../components/Layout/Footer";
 import EventCard from "../components/Events/EventCard";
@@ -6,6 +7,10 @@ import { useCatalogEvents } from "../utils/catalog";
 
 const EventsPage = () => {
   const eventData = useCatalogEvents();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div>
       <Header activeHeading={4} />

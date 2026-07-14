@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { AiOutlineDelete } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { toast } from "react-toastify";
 import { getAllProductsShop, deleteProduct } from "../../redux/actions/product";
 import { imageUrl } from "../../utils/imageUrl";
@@ -55,6 +55,13 @@ const AllProducts = () => {
               </span>
 
               <div className="flex items-center justify-end gap-4 pt-3">
+                <Link to={`/dashboard-edit-product/${item._id}`}>
+                  <AiOutlineEdit
+                    size={22}
+                    className="cursor-pointer text-[#3321c8]"
+                    title="Edit"
+                  />
+                </Link>
                 <AiOutlineDelete
                   size={22}
                   className="cursor-pointer text-red-600"

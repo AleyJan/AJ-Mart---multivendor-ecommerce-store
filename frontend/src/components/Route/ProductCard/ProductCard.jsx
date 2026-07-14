@@ -6,6 +6,8 @@ import {
   AiOutlineHeart,
   AiOutlineEye,
   AiOutlineShoppingCart,
+  AiOutlineLeft,
+  AiOutlineRight,
 } from "react-icons/ai";
 import { toast } from "react-toastify";
 import styles from "../../../styles/styles";
@@ -20,6 +22,20 @@ const ProductCard = ({ data }) => {
   const dispatch = useDispatch();
   const [click, setClick] = useState(false); // wishlist
   const [open, setOpen] = useState(false); // details popup
+  const [imgIndex, setImgIndex] = useState(0); // active slide
+
+  const images = data.image_Url || [];
+
+  const goPrev = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setImgIndex((i) => (i === 0 ? images.length - 1 : i - 1));
+  };
+  const goNext = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setImgIndex((i) => (i === images.length - 1 ? 0 : i + 1));
+  };
 
   const name =
     data.name.length > 40 ? data.name.slice(0, 40) + "..." : data.name;
@@ -53,13 +69,47 @@ const ProductCard = ({ data }) => {
     <div className="w-full min-h-[370px] bg-white rounded-lg shadow-sm p-3 cursor-pointer">
       {/* Top row: image (left) + action icons column (right) */}
       <div className="flex justify-between items-start">
-        <Link to={`/product/${data.id}`} className="block w-[calc(100%-34px)]">
-          <img
-            src={data.image_Url[0]?.url}
-            alt=""
-            className="w-full h-[170px] object-contain"
-          />
-        </Link>
+        <div className="relative w-[calc(100%-34px)] group">
+          <Link to={`/product/${data.id}`} className="block">
+            <img
+              src={images[imgIndex]?.url}
+              alt=""
+              className="w-full h-[170px] object-contain"
+            />
+          </Link>
+
+          {images.length > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={goPrev}
+                className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition"
+                title="Previous image"
+              >
+                <AiOutlineLeft size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition"
+                title="Next image"
+              >
+                <AiOutlineRight size={16} />
+              </button>
+
+              <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
+                {images.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-[6px] w-[6px] rounded-full ${
+                      i === imgIndex ? "bg-[#3321c8]" : "bg-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
 
         <div className="flex flex-col items-center gap-4 pt-2">
           {click ? (

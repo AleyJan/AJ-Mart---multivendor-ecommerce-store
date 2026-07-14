@@ -1,36 +1,95 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 import {
   AiFillFacebook,
   AiFillInstagram,
   AiFillYoutube,
   AiOutlineTwitter,
 } from "react-icons/ai";
+import { server } from "../../server";
 
-const footerProductLinks = [
-  { name: "About us", link: "/about" },
-  { name: "Careers", link: "/careers" },
-  { name: "Store Locations" },
-  { name: "Our Blog" },
-  { name: "Reviews" },
+// All links point to real, existing routes.
+const companyLinks = [
+  { name: "Home", link: "/" },
+  { name: "Best Selling", link: "/best-selling" },
+  { name: "Products", link: "/products" },
+  { name: "Events", link: "/events" },
+  { name: "FAQ", link: "/faq" },
 ];
 
-const footercompanyLinks = [
-  { name: "Game & Video" },
-  { name: "Phones & Tablets" },
-  { name: "Computers & Laptop" },
-  { name: "Sport Watches" },
-  { name: "Events" },
+const categoryLinks = [
+  { name: "Computers & Laptops", category: "Computers and Laptops" },
+  { name: "Mobile & Tablets", category: "Mobile and Tablets" },
+  { name: "Cosmetics & Body Care", category: "Cosmetics and Body Care" },
+  { name: "Music & Gaming", category: "Music and Gaming" },
+  { name: "Accessories", category: "Accessories" },
+].map((c) => ({
+  name: c.name,
+  link: `/products?category=${encodeURIComponent(c.category)}`,
+}));
+
+const accountLinks = [
+  { name: "My Profile", link: "/profile" },
+  { name: "Login", link: "/login" },
+  { name: "Sign Up", link: "/sign-up" },
+  { name: "Become a Seller", link: "/shop-create" },
+  { name: "Seller Login", link: "/shop-login" },
 ];
 
-const footerSupportLinks = [
-  { name: "FAQ" },
-  { name: "Reviews" },
-  { name: "Contact Us" },
-  { name: "Shipping" },
-  { name: "Live chat" },
+const socialLinks = [
+  { Icon: AiFillFacebook, url: "https://facebook.com", label: "Facebook" },
+  { Icon: AiOutlineTwitter, url: "https://x.com", label: "X" },
+  {
+    Icon: AiFillInstagram,
+    url: "https://www.instagram.com/vektorstudio00/",
+    label: "Instagram",
+  },
+  { Icon: AiFillYoutube, url: "https://youtube.com", label: "YouTube" },
 ];
+
+const LinkColumn = ({ title, links }) => (
+  <ul className="text-center sm:text-start">
+    <h1 className="mb-1 font-semibold">{title}</h1>
+    {links.map((link) => (
+      <li key={link.name}>
+        <Link
+          className="text-gray-400 hover:text-teal-400 duration-300 text-sm cursor-pointer leading-6"
+          to={link.link}
+        >
+          {link.name}
+        </Link>
+      </li>
+    ))}
+  </ul>
+);
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    if (!valid) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await axios.post(`${server}/subscriber/subscribe`, {
+        email: email.trim(),
+      });
+      toast.success("Thanks for subscription!");
+      setEmail("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Subscription failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="bg-[#000] text-white">
       {/* Subscribe bar */}
@@ -40,79 +99,61 @@ const Footer = () => {
           <br />
           events and offers
         </h1>
-        <div>
+        <form onSubmit={handleSubscribe}>
           <input
             type="email"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email..."
             className="text-gray-800 sm:w-72 w-full sm:mr-5 mr-1 lg:mb-0 mb-4 py-2.5 rounded px-2 focus:outline-none"
           />
-          <button className="bg-[#56d879] hover:bg-teal-500 duration-300 px-5 py-2.5 rounded-md text-white md:w-auto w-full">
-            Submit
+          <button
+            type="submit"
+            disabled={submitting}
+            className="bg-[#56d879] hover:bg-teal-500 duration-300 px-5 py-2.5 rounded-md text-white md:w-auto w-full disabled:opacity-60"
+          >
+            {submitting ? "Submitting..." : "Submit"}
           </button>
-        </div>
+        </form>
       </div>
 
       {/* Columns */}
       <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:px-8 px-5 py-16 sm:text-center">
         <ul className="px-5 text-center sm:text-start flex sm:block flex-col items-center">
-          <h1 className="mb-1 font-semibold text-[#f0a500] text-2xl">AJ MART</h1>
+          <Link to="/">
+            <h1 className="mb-1 font-semibold text-[#f0a500] text-2xl">AJ MART</h1>
+          </Link>
           <p>The home and elements needed to create beautiful products.</p>
           <div className="flex items-center mt-[15px]">
-            <AiFillFacebook size={25} className="cursor-pointer" />
-            <AiOutlineTwitter size={25} className="ml-[15px] cursor-pointer" />
-            <AiFillInstagram size={25} className="ml-[15px] cursor-pointer" />
-            <AiFillYoutube size={25} className="ml-[15px] cursor-pointer" />
+            {socialLinks.map(({ Icon, url, label }, index) => (
+              <a
+                key={label}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className={index === 0 ? "" : "ml-[15px]"}
+              >
+                <Icon size={25} className="cursor-pointer hover:text-[#56d879]" />
+              </a>
+            ))}
           </div>
         </ul>
 
-        <ul className="text-center sm:text-start">
-          <h1 className="mb-1 font-semibold">Company</h1>
-          {footerProductLinks.map((link, index) => (
-            <li key={index}>
-              <Link
-                className="text-gray-400 hover:text-teal-400 duration-300 text-sm cursor-pointer leading-6"
-                to={link.link ? link.link : "#"}
-              >
-                {link.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <ul className="text-center sm:text-start">
-          <h1 className="mb-1 font-semibold">Shop</h1>
-          {footercompanyLinks.map((link, index) => (
-            <li key={index}>
-              <Link
-                className="text-gray-400 hover:text-teal-400 duration-300 text-sm cursor-pointer leading-6"
-                to="#"
-              >
-                {link.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <ul className="text-center sm:text-start">
-          <h1 className="mb-1 font-semibold">Support</h1>
-          {footerSupportLinks.map((link, index) => (
-            <li key={index}>
-              <Link
-                className="text-gray-400 hover:text-teal-400 duration-300 text-sm cursor-pointer leading-6"
-                to="#"
-              >
-                {link.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <LinkColumn title="Company" links={companyLinks} />
+        <LinkColumn title="Shop by Category" links={categoryLinks} />
+        <LinkColumn title="My Account" links={accountLinks} />
       </div>
 
       {/* Bottom bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 text-center pt-2 text-gray-400 text-sm pb-8">
         <span>© 2026 AJ MART. All rights reserved.</span>
-        <span>Terms · Privacy Policy</span>
+        <span>
+          <Link to="/faq" className="hover:text-teal-400 duration-300">
+            Terms · Privacy Policy
+          </Link>
+        </span>
         <div className="sm:block flex items-center justify-center w-full">
           <span>Multi-vendor Ecommerce</span>
         </div>

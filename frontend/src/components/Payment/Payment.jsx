@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "react-toastify";
 import {
@@ -15,8 +15,12 @@ import { clearCart } from "../../redux/actions/cart";
 import { server } from "../../server";
 
 const Payment = () => {
+  const { user } = useSelector((state) => state.user);
+  const savedCards = user?.paymentMethods || [];
+
   const [orderData, setOrderData] = useState(null);
-  const [select, setSelect] = useState(1); // 1 = card, 2 = cash on delivery
+  const [select, setSelect] = useState(1); // 1 = card, 2 = COD, 3 = saved card
+  const [selectedCardId, setSelectedCardId] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const stripe = useStripe();
@@ -30,6 +34,13 @@ const Payment = () => {
     }
     setOrderData(JSON.parse(stored));
   }, [navigate]);
+
+  // Preselect the buyer's default saved card ("fetch" its details on load)
+  useEffect(() => {
+    if (!savedCards.length) return;
+    const def = savedCards.find((c) => c.isDefault) || savedCards[0];
+    setSelectedCardId((prev) => prev || def?._id);
+  }, [savedCards]);
 
   // Create the real order after a successful (or COD) payment.
   const createOrder = async (paymentInfo) => {
@@ -85,6 +96,20 @@ const Payment = () => {
         error.response?.data?.message || "Payment failed — check your Stripe keys."
       );
     }
+  };
+
+  // ---------------- Saved card (default) ----------------
+  const savedCardHandler = (e) => {
+    e.preventDefault();
+    const card = savedCards.find((c) => c._id === selectedCardId);
+    if (!card) return toast.error("Please select a saved card");
+    createOrder({
+      type: "Saved Card",
+      status: "succeeded",
+      brand: card.brand,
+      last4: card.last4,
+      cardHolderName: card.cardHolderName,
+    });
   };
 
   // ---------------- Cash on delivery ----------------
@@ -159,6 +184,82 @@ const Payment = () => {
                     expiry, any CVC.
                   </p>
                 </form>
+              ) : null}
+            </div>
+
+            <br />
+            {/* Saved card (default) */}
+            <div>
+              <div className="flex w-full pb-5 border-b mb-2">
+                <div
+                  className="relative flex items-center cursor-pointer"
+                  onClick={() => setSelect(3)}
+                >
+                  <div className="w-[22px] h-[22px] rounded-full border-[3px] border-[#1d1a1ab4] flex items-center justify-center">
+                    {select === 3 ? (
+                      <div className="w-[12px] h-[12px] bg-[#1d1a1acb] rounded-full" />
+                    ) : null}
+                  </div>
+                  <h4 className="text-[18px] pl-2 font-[600] text-[#000000b1]">
+                    Pay with saved card
+                  </h4>
+                </div>
+              </div>
+
+              {select === 3 ? (
+                savedCards.length ? (
+                  <form onSubmit={savedCardHandler} className="w-full">
+                    <div className="space-y-2 pb-3">
+                      {savedCards.map((c) => (
+                        <label
+                          key={c._id}
+                          className={`flex items-center justify-between border rounded-[5px] p-3 cursor-pointer ${
+                            selectedCardId === c._id
+                              ? "border-[#3321c8] bg-[#f5f4ff]"
+                              : "border-gray-200"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              name="savedCard"
+                              checked={selectedCardId === c._id}
+                              onChange={() => setSelectedCardId(c._id)}
+                            />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-[600]">
+                                  {c.brand} •••• {c.last4}
+                                </span>
+                                {c.isDefault ? (
+                                  <span className="text-[11px] bg-[#3ad132] text-white px-2 py-[1px] rounded-full">
+                                    Default
+                                  </span>
+                                ) : null}
+                              </div>
+                              <span className="text-[13px] text-gray-500">
+                                {c.cardHolderName} · exp {c.expiryDate}
+                              </span>
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <input
+                      type="submit"
+                      value="Confirm Order"
+                      className={`${styles.button} !bg-[#f63b60] text-white h-[45px] rounded-[5px] cursor-pointer text-[18px] font-[600]`}
+                    />
+                  </form>
+                ) : (
+                  <p className="text-[14px] text-gray-500">
+                    No saved cards.{" "}
+                    <Link to="/profile" className="text-[#3321c8] underline">
+                      Add one in your dashboard
+                    </Link>{" "}
+                    (Payment Methods tab).
+                  </p>
+                )
               ) : null}
             </div>
 

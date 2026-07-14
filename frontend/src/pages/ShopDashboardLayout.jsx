@@ -1,17 +1,20 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import DashboardHeader from "../components/Shop/DashboardHeader";
 import DashboardSideBar from "../components/Shop/DashboardSideBar";
+import { useSellerAccess } from "../routes/useSessions";
 
 // Shared shell for every seller dashboard route: top header + left sidebar + content.
 const ShopDashboardLayout = ({ active, children }) => {
   const navigate = useNavigate();
-  const { isSeller, isLoading } = useSelector((state) => state.seller);
+  const { valid, resolving } = useSellerAccess();
 
   useEffect(() => {
-    if (!isLoading && !isSeller) navigate("/shop-login");
-  }, [isLoading, isSeller, navigate]);
+    if (!resolving && !valid) navigate("/shop-login");
+  }, [resolving, valid, navigate]);
+
+  // Don't flash dashboard content while resolving or for an untrusted session.
+  if (resolving || !valid) return null;
 
   return (
     <div>

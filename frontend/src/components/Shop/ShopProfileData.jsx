@@ -2,16 +2,13 @@ import { useState } from "react";
 import ProductCard from "../Route/ProductCard/ProductCard";
 import EventCard from "../Events/EventCard";
 import Ratings from "../Products/Ratings";
-import { productData, eventData } from "../../static/data";
 import { imageUrl } from "../../utils/imageUrl";
 
-const ShopProfileData = ({ shopName, products: productsProp, events: eventsProp }) => {
+const ShopProfileData = ({ products: productsProp, events: eventsProp }) => {
   const [active, setActive] = useState(1);
 
-  const products =
-    productsProp || productData.filter((p) => p.shop.name === shopName);
-  const events =
-    eventsProp || eventData.filter((e) => e.shop.name === shopName);
+  const products = productsProp || [];
+  const events = eventsProp || [];
 
   // all reviews across this shop's products
   const allReviews = products.flatMap((p) => p.reviews || []);

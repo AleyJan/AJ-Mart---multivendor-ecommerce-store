@@ -21,7 +21,6 @@ const productSchema = new mongoose.Schema({
   },
   discountPrice: {
     type: Number,
-    required: [true, "Please enter your product price!"],
   },
   stock: {
     type: Number,

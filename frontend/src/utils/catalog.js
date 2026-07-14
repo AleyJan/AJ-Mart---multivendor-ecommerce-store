@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { productData, eventData } from "../static/data";
 import { normalizeProduct, normalizeEvent } from "./normalizeShopItem";
 
 const shopKey = (p) => p.shop?._id || p.shopId || p.shop?.name;
@@ -28,16 +27,12 @@ const withComputedShopRatings = (products) => {
   });
 };
 
-// Buyer-facing catalogue = real seller products (backend, normalized) FIRST,
-// then the pre-seeded demo products. Both kept. Memoized on the backend list so
-// the merged array reference is stable across renders.
+// Buyer-facing catalogue = real seller products (backend, normalized).
+// Memoized on the backend list so the array reference is stable across renders.
 export const useCatalogProducts = () => {
   const { allProducts } = useSelector((state) => state.products);
   return useMemo(
-    () => [
-      ...withComputedShopRatings((allProducts || []).map(normalizeProduct)),
-      ...productData,
-    ],
+    () => withComputedShopRatings((allProducts || []).map(normalizeProduct)),
     [allProducts]
   );
 };
@@ -45,10 +40,7 @@ export const useCatalogProducts = () => {
 export const useCatalogEvents = () => {
   const { allEvents } = useSelector((state) => state.events);
   return useMemo(
-    () => [
-      ...withComputedShopRatings((allEvents || []).map(normalizeEvent)),
-      ...eventData,
-    ],
+    () => withComputedShopRatings((allEvents || []).map(normalizeEvent)),
     [allEvents]
   );
 };

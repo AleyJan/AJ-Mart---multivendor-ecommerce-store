@@ -40,6 +40,72 @@ router.post(
   })
 );
 
+// -------------------- GET A SINGLE PRODUCT --------------------
+router.get(
+  "/get-product/:id",
+  catchAsyncErrors(async (req, res, next) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return next(new ErrorHandler("Product not found with this id!", 404));
+    }
+    res.status(200).json({ success: true, product });
+  })
+);
+
+// -------------------- UPDATE A PRODUCT --------------------
+router.put(
+  "/update-product/:id",
+  isSeller,
+  upload.array("images"),
+  catchAsyncErrors(async (req, res, next) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return next(new ErrorHandler("Product not found with this id!", 404));
+    }
+
+    // only the owning shop may edit
+    if (String(product.shopId) !== String(req.seller._id)) {
+      return next(new ErrorHandler("Not authorized to edit this product", 403));
+    }
+
+    const {
+      name,
+      description,
+      category,
+      tags,
+      originalPrice,
+      discountPrice,
+      stock,
+    } = req.body;
+
+    if (name !== undefined) product.name = name;
+    if (description !== undefined) product.description = description;
+    if (category !== undefined) product.category = category;
+    if (tags !== undefined) product.tags = tags;
+    if (originalPrice !== undefined)
+      product.originalPrice = originalPrice === "" ? null : originalPrice;
+    if (discountPrice !== undefined) product.discountPrice = discountPrice;
+    if (stock !== undefined) product.stock = stock;
+
+    // if new images were uploaded, replace the old set
+    const files = req.files || [];
+    if (files.length) {
+      await Promise.all(
+        (product.images || []).map((img) =>
+          img.public_id ? destroy(img.public_id).catch(() => {}) : null
+        )
+      );
+      product.images = await Promise.all(
+        files.map((file) => uploadBuffer(file.buffer, "products"))
+      );
+    }
+
+    await product.save();
+
+    res.status(200).json({ success: true, product });
+  })
+);
+
 // -------------------- GET ALL PRODUCTS OF A SHOP --------------------
 router.get(
   "/get-all-products-shop/:id",

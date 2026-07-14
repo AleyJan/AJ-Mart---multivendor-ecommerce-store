@@ -98,6 +98,15 @@ const ShopLogin = () => {
               </button>
             </div>
 
+            <div className="text-sm text-right">
+              <Link
+                to="/shop/forgot-password"
+                className="text-primary hover:underline"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+
             <div className="flex items-center w-full text-sm">
               <span>Don&apos;t have a shop?</span>
               <Link

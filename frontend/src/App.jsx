@@ -22,7 +22,6 @@ import ShopPreviewPage from "./pages/ShopPreviewPage";
 import ShopHomePage from "./pages/ShopHomePage";
 import ShopDashboardLayout from "./pages/ShopDashboardLayout";
 import DashboardHero from "./components/Shop/DashboardHero";
-import DashboardComingSoon from "./components/Shop/DashboardComingSoon";
 import CreateProduct from "./components/Shop/CreateProduct";
 import AllProducts from "./components/Shop/AllProducts";
 import AllOrders from "./components/Shop/AllOrders";
@@ -43,14 +42,33 @@ import AdminAllProducts from "./components/Admin/AdminAllProducts";
 import AdminWithdraw from "./components/Admin/AdminWithdraw";
 import CreateEvent from "./components/Shop/CreateEvent";
 import AllEvents from "./components/Shop/AllEvents";
+import AdminSubscribers from "./components/Admin/AdminSubscribers";
+import UnsubscribePage from "./pages/UnsubscribePage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import GuestRoute from "./routes/GuestRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/sign-up" element={<SignupPage />} />
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <GuestRoute>
+              <SignupPage />
+            </GuestRoute>
+          }
+        />
         <Route path="/activation/:activation_token" element={<ActivationPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/inbox" element={<UserInbox />} />
@@ -106,16 +124,51 @@ function App() {
             </AdminDashboardLayout>
           }
         />
+        <Route
+          path="/admin-subscribers"
+          element={
+            <AdminDashboardLayout active={7}>
+              <AdminSubscribers />
+            </AdminDashboardLayout>
+          }
+        />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/product/:id" element={<ProductDetailsPage />} />
         <Route path="/best-selling" element={<BestSellingPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/faq" element={<FAQPage />} />
+        <Route path="/unsubscribe" element={<UnsubscribePage />} />
+        <Route
+          path="/forgot-password"
+          element={<ForgotPasswordPage type="user" />}
+        />
+        <Route
+          path="/shop/forgot-password"
+          element={<ForgotPasswordPage type="shop" />}
+        />
+        <Route
+          path="/reset-password/:type/:token"
+          element={<ResetPasswordPage />}
+        />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/order/success" element={<OrderSuccessPage />} />
-        <Route path="/shop-create" element={<ShopCreate />} />
-        <Route path="/shop-login" element={<ShopLogin />} />
+        <Route
+          path="/shop-create"
+          element={
+            <GuestRoute type="seller">
+              <ShopCreate />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/shop-login"
+          element={
+            <GuestRoute type="seller">
+              <ShopLogin />
+            </GuestRoute>
+          }
+        />
         <Route
           path="/shop/activation/:activation_token"
           element={<ShopActivationPage />}
@@ -152,6 +205,14 @@ function App() {
           path="/dashboard-create-product"
           element={
             <ShopDashboardLayout active={4}>
+              <CreateProduct />
+            </ShopDashboardLayout>
+          }
+        />
+        <Route
+          path="/dashboard-edit-product/:id"
+          element={
+            <ShopDashboardLayout active={3}>
               <CreateProduct />
             </ShopDashboardLayout>
           }

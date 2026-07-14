@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { AiOutlineHeart, AiOutlineSearch, AiOutlineShoppingCart } from "react-icons/ai";
-import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowDown } from "react-icons/io";
 import { BiMenuAltLeft } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 import { RxCross1 } from "react-icons/rx";
@@ -15,6 +15,7 @@ import DropDown from "../Route/DropDown";
 import Navbar from "../Route/Navbar";
 import Cart from "../cart/Cart";
 import Wishlist from "../Wishlist/Wishlist";
+import RoleSwitchButton from "./RoleSwitchButton";
 
 const Header = ({ activeHeading }) => {
   const { isAuthenticated, user } = useSelector((state) => state.user);
@@ -88,14 +89,11 @@ AJ MART
             ) : null}
           </div>
 
-          {/* Become Seller (not functional yet) */}
-          <div className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-[5px] cursor-pointer">
-            <Link to="/shop-create">
-              <h1 className="text-[#fff] flex items-center">
-                Become Seller <IoIosArrowForward className="ml-1" />
-              </h1>
-            </Link>
-          </div>
+          {/* Switch to the seller side (Fiverr-style) */}
+          <RoleSwitchButton
+            direction="toSeller"
+            className="min-w-[210px] px-4 bg-black h-[50px] flex items-center justify-center rounded-[5px] cursor-pointer text-[#fff]"
+          />
         </div>
       </div>
 
@@ -275,14 +273,12 @@ AJ MART
               {/* Nav links */}
               <Navbar active={activeHeading} />
 
-              {/* Become Seller */}
-              <div className="ml-4 w-[150px] bg-black h-[45px] my-3 flex items-center justify-center rounded-[4px] cursor-pointer">
-                <Link to="/shop-create">
-                  <h1 className="text-white flex items-center">
-                    Become Seller <IoIosArrowForward className="ml-1" />
-                  </h1>
-                </Link>
-              </div>
+              {/* Switch to the seller side (Fiverr-style) */}
+              <RoleSwitchButton
+                direction="toSeller"
+                onNavigate={() => setOpen(false)}
+                className="ml-4 px-4 bg-black h-[45px] my-3 flex items-center justify-center rounded-[4px] cursor-pointer text-white"
+              />
 
               <br />
               <br />

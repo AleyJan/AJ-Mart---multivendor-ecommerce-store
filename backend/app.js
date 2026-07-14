@@ -6,9 +6,19 @@ const app = express();
 
 const ErrorHandler = require("./middleware/error");
 
+const primaryOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+const extraOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const allowedOrigins = [...new Set([primaryOrigin, ...extraOrigins])];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   })
 );
@@ -33,6 +43,7 @@ const conversation = require("./controller/conversation");
 const message = require("./controller/message");
 const payment = require("./controller/payment");
 const withdraw = require("./controller/withdraw");
+const subscriber = require("./controller/subscriber");
 app.use("/api/v2/user", user);
 app.use("/api/v2/shop", shop);
 app.use("/api/v2/product", product);
@@ -43,6 +54,7 @@ app.use("/api/v2/conversation", conversation);
 app.use("/api/v2/message", message);
 app.use("/api/v2/payment", payment);
 app.use("/api/v2/withdraw", withdraw);
+app.use("/api/v2/subscriber", subscriber);
 
 app.get("/", (req, res) => {
   res.send("Multi-vendor API is running");

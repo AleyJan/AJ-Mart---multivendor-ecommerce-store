@@ -8,11 +8,24 @@ import { server } from "../../server";
 import { imageUrl } from "../../utils/imageUrl";
 import styles from "../../styles/styles";
 import { getAllOrdersOfUser } from "../../redux/actions/order";
+import { loadUser } from "../../redux/actions/user";
+import Inbox from "../Messaging/Inbox";
+import AddressTab from "./AddressTab";
+import PaymentTab from "./PaymentTab";
 
 const ProfileContent = ({ active }) => {
   const { user } = useSelector((state) => state.user);
   const { orders } = useSelector((state) => state.order);
   const dispatch = useDispatch();
+
+  // the buyer chats with sellers -> fetch shop info for each conversation
+  const fetchOther = (sellerId) =>
+    axios.get(`${server}/shop/get-shop-info/${sellerId}`).then((res) => ({
+      name: res.data.shop?.name,
+      avatar: res.data.shop?.avatar?.url
+        ? imageUrl(res.data.shop.avatar.url)
+        : null,
+    }));
 
   useEffect(() => {
     if ((active === 2 || active === 3 || active === 5) && user?._id) {
@@ -40,14 +53,37 @@ const ProfileContent = ({ active }) => {
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
-  const [zipCode, setZipCode] = useState("");
-  const [address1, setAddress1] = useState("");
-  const [address2, setAddress2] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Update endpoint is implemented in a later step.
-    toast.info("Profile update will be wired up in a later step.");
+    try {
+      await axios.put(
+        `${server}/user/update-user-info`,
+        { name, email, phoneNumber },
+        { withCredentials: true }
+      );
+      toast.success("Profile updated!");
+      dispatch(loadUser());
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Update failed");
+    }
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const form = new FormData();
+    form.append("image", file);
+    try {
+      await axios.put(`${server}/user/update-avatar`, form, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Avatar updated!");
+      dispatch(loadUser());
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Avatar update failed");
+    }
   };
 
   return (
@@ -62,9 +98,19 @@ const ProfileContent = ({ active }) => {
                 className="w-[150px] h-[150px] rounded-full object-cover border-[3px] border-[#3ad132]"
                 alt=""
               />
-              <div className="w-[30px] h-[30px] bg-[#E3E9EE] rounded-full flex items-center justify-center cursor-pointer absolute bottom-[5px] right-[5px]">
+              <input
+                type="file"
+                id="avatar-upload"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+              <label
+                htmlFor="avatar-upload"
+                className="w-[30px] h-[30px] bg-[#E3E9EE] rounded-full flex items-center justify-center cursor-pointer absolute bottom-[5px] right-[5px]"
+              >
                 <AiOutlineCamera />
-              </div>
+              </label>
             </div>
           </div>
 
@@ -103,37 +149,12 @@ const ProfileContent = ({ active }) => {
                     onChange={(e) => setPhoneNumber(e.target.value)}
                   />
                 </div>
-                <div className="w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Zip Code</label>
-                  <input
-                    type="number"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-                    value={zipCode}
-                    onChange={(e) => setZipCode(e.target.value)}
-                  />
-                </div>
               </div>
 
-              <div className="w-full 800px:flex block pb-3">
-                <div className="w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Address 1</label>
-                  <input
-                    type="text"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-                    value={address1}
-                    onChange={(e) => setAddress1(e.target.value)}
-                  />
-                </div>
-                <div className="w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Address 2</label>
-                  <input
-                    type="text"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-                    value={address2}
-                    onChange={(e) => setAddress2(e.target.value)}
-                  />
-                </div>
-              </div>
+              <p className="text-[13px] text-gray-500 pb-1">
+                Manage your saved addresses in the{" "}
+                <span className="text-[#3321c8] font-[500]">Address</span> tab.
+              </p>
 
               <input
                 className="w-[250px] h-[40px] border border-[#3a24db] text-center text-[#3a24db] rounded-[3px] mt-8 cursor-pointer"
@@ -258,6 +279,26 @@ const ProfileContent = ({ active }) => {
         </div>
       )}
 
+      {/* ---------------- Inbox tab ---------------- */}
+      {active === 4 && (
+        <div className="w-full px-2 800px:px-5">
+          <h3 className="text-[22px] font-[500] pb-4">Inbox</h3>
+          {user?._id ? (
+            <Inbox
+              meId={user._id}
+              conversationsUrl={`${server}/conversation/get-all-conversation-user/${user._id}`}
+              fetchOther={fetchOther}
+            />
+          ) : null}
+        </div>
+      )}
+
+      {/* ---------------- Payment Methods tab ---------------- */}
+      {active === 6 && <PaymentTab />}
+
+      {/* ---------------- Address tab ---------------- */}
+      {active === 7 && <AddressTab />}
+
       {/* ---------------- Track Order tab ---------------- */}
       {active === 5 && (
         <div className="w-full px-2 800px:px-5">
@@ -308,12 +349,6 @@ const ProfileContent = ({ active }) => {
         </div>
       )}
 
-      {/* ---------------- Other tabs (built in later steps) ---------------- */}
-      {active !== 1 && active !== 2 && active !== 3 && active !== 5 && (
-        <div className="w-full flex items-center justify-center min-h-[40vh] text-[18px] text-gray-500">
-          This section will be built in a later step.
-        </div>
-      )}
     </div>
   );
 };

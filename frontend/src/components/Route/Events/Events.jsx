@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import styles from "../../../styles/styles";
 import EventCard from "../../Events/EventCard";
 import { useCatalogEvents } from "../../../utils/catalog";
@@ -15,8 +16,15 @@ const Events = () => {
 
   return (
     <div className={`${styles.section}`}>
-      <div className={`${styles.heading}`}>
-        <h1>Popular Events</h1>
+      <div className="w-full flex items-center justify-between">
+        <div className={`${styles.heading}`}>
+          <h1>Popular Events</h1>
+        </div>
+        <Link to="/events">
+          <div className="px-5 h-[40px] flex items-center bg-[#3321c8] text-white rounded-[4px] cursor-pointer hover:bg-blue-700">
+            All Events
+          </div>
+        </Link>
       </div>
       <div className="w-full grid">
         {topEvent ? (

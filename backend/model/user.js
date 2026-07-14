@@ -32,6 +32,16 @@ const userSchema = new mongoose.Schema(
         addressType: { type: String },
       },
     ],
+    // Only non-sensitive card details are stored (never the full number or CVV).
+    paymentMethods: [
+      {
+        cardHolderName: { type: String },
+        brand: { type: String },
+        last4: { type: String },
+        expiryDate: { type: String }, // MM/YY
+        isDefault: { type: Boolean, default: false },
+      },
+    ],
     role: {
       type: String,
       default: "user",

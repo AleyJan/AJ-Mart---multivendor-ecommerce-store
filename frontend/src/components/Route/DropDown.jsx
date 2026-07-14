@@ -4,10 +4,8 @@ const DropDown = ({ categoriesData, setDropDown }) => {
   const navigate = useNavigate();
 
   const submitHandle = (category) => {
-    // Products listing is built in a later step; for now just close the menu.
     navigate(`/products?category=${encodeURIComponent(category.title)}`);
     setDropDown(false);
-    window.location.reload();
   };
 
   return (

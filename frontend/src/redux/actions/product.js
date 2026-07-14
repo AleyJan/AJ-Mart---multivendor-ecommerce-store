@@ -22,6 +22,27 @@ export const createProduct = (newForm) => async (dispatch) => {
   }
 };
 
+// update product (newForm is FormData; images optional)
+export const updateProduct = (id, newForm) => async (dispatch) => {
+  try {
+    dispatch({ type: "updateProductRequest" });
+
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+    const { data } = await axios.put(
+      `${server}/product/update-product/${id}`,
+      newForm,
+      { ...config, withCredentials: true }
+    );
+
+    dispatch({ type: "updateProductSuccess", payload: data.product });
+  } catch (error) {
+    dispatch({
+      type: "updateProductFail",
+      payload: error.response?.data?.message,
+    });
+  }
+};
+
 // get all products of a shop
 export const getAllProductsShop = (id) => async (dispatch) => {
   try {

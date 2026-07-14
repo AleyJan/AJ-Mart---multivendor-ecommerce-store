@@ -20,6 +20,20 @@ export const productReducer = createReducer(initialState, (builder) => {
       state.error = action.payload;
       state.success = false;
     })
+    // update
+    .addCase("updateProductRequest", (state) => {
+      state.isLoading = true;
+    })
+    .addCase("updateProductSuccess", (state, action) => {
+      state.isLoading = false;
+      state.product = action.payload;
+      state.success = true;
+    })
+    .addCase("updateProductFail", (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload;
+      state.success = false;
+    })
     // get all products of a shop
     .addCase("getAllProductsShopRequest", (state) => {
       state.isLoading = true;

@@ -1,5 +1,6 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const router = express.Router();
 
 const Shop = require("../model/shop");
@@ -146,6 +147,16 @@ router.get(
   })
 );
 
+// -------------------- CHECK IF A SHOP ACCOUNT EXISTS (by email) --------------------
+router.get(
+  "/exists",
+  catchAsyncErrors(async (req, res, next) => {
+    const { email } = req.query;
+    const exists = email ? Boolean(await Shop.findOne({ email })) : false;
+    res.status(200).json({ success: true, exists });
+  })
+);
+
 // -------------------- PUBLIC SHOP INFO --------------------
 router.get(
   "/get-shop-info/:id",
@@ -227,6 +238,88 @@ router.delete(
       return next(new ErrorHandler("Seller not found", 400));
     }
     res.status(201).json({ success: true, message: "Seller deleted successfully!" });
+  })
+);
+
+// -------------------- FORGOT PASSWORD (SHOP) --------------------
+router.post(
+  "/forgot-password",
+  catchAsyncErrors(async (req, res, next) => {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const seller = await Shop.findOne({ email });
+    if (!seller) {
+      return next(new ErrorHandler("No shop found with this email", 404));
+    }
+
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    seller.resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    seller.resetPasswordTime = Date.now() + 15 * 60 * 1000;
+    await seller.save({ validateBeforeSave: false });
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/shop/${resetToken}`;
+    try {
+      await sendMail({
+        email: seller.email,
+        subject: "Reset your AJ MART shop password",
+        message: `Reset your shop password using this link (valid 15 minutes): ${resetUrl}`,
+        html: `
+          <h2>Shop password reset requested</h2>
+          <p>Click the button below to set a new password. This link expires in 15 minutes.</p>
+          <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#3321c8;color:#fff;text-decoration:none;border-radius:5px;">Reset Password</a>
+          <p>If you didn't request this, you can ignore this email.</p>
+        `,
+      });
+      res
+        .status(200)
+        .json({ success: true, message: `Reset link sent to ${seller.email}` });
+    } catch (e) {
+      seller.resetPasswordToken = undefined;
+      seller.resetPasswordTime = undefined;
+      await seller.save({ validateBeforeSave: false });
+      return next(new ErrorHandler("Email could not be sent", 500));
+    }
+  })
+);
+
+// -------------------- RESET PASSWORD (SHOP) --------------------
+router.put(
+  "/reset-password/:token",
+  catchAsyncErrors(async (req, res, next) => {
+    const hashed = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const seller = await Shop.findOne({
+      resetPasswordToken: hashed,
+      resetPasswordTime: { $gt: Date.now() },
+    }).select("+password");
+
+    if (!seller) {
+      return next(
+        new ErrorHandler("Reset link is invalid or has expired", 400)
+      );
+    }
+
+    const { password } = req.body;
+    if (!password || password.length < 6) {
+      return next(
+        new ErrorHandler("Password must be at least 6 characters", 400)
+      );
+    }
+
+    seller.password = password;
+    seller.resetPasswordToken = undefined;
+    seller.resetPasswordTime = undefined;
+    await seller.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successful. You can now log in.",
+    });
   })
 );
 

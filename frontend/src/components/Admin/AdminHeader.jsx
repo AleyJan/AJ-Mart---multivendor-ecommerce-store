@@ -11,7 +11,11 @@ const AdminHeader = () => {
   return (
     <div className="w-full h-[80px] bg-white shadow sticky top-0 left-0 z-30 flex items-center justify-between px-4">
       <Link to="/">
-        <h1 className="text-[26px] font-extrabold text-[#f0a500]">AJ MART</h1>
+        <img
+          src="/home-logo.png"
+          alt="AJ MART"
+          className="h-[50px] w-auto object-contain"
+        />
       </Link>
       <div className="flex items-center">
         <span className="hidden 800px:block pr-3 font-[500] text-gray-600">

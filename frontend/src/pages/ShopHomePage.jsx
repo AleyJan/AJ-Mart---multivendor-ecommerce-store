@@ -41,9 +41,11 @@ const ShopHomePage = () => {
           className={`${styles.section} flex items-center justify-between h-[70px]`}
         >
           <Link to="/">
-            <h1 className="text-[24px] font-extrabold text-[#f0a500]">
-AJ MART
-            </h1>
+            <img
+              src="/home-logo.png"
+              alt="AJ MART"
+              className="h-[45px] w-auto object-contain"
+            />
           </Link>
           <Link to="/dashboard">
             <div className="bg-black px-5 h-[40px] rounded-[5px] flex items-center justify-center cursor-pointer">

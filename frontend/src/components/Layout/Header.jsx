@@ -57,9 +57,11 @@ const Header = ({ activeHeading }) => {
           {/* Logo */}
           <div>
             <Link to="/">
-              <h1 className="text-[28px] font-extrabold text-[#f0a500]">
-AJ MART
-              </h1>
+              <img
+                src="/home-logo.png"
+                alt="AJ MART"
+                className="h-[55px] w-auto object-contain"
+              />
             </Link>
           </div>
 
@@ -201,9 +203,11 @@ AJ MART
           </div>
           <div>
             <Link to="/">
-              <h1 className="text-[24px] font-extrabold text-[#f0a500] mt-1">
-AJ MART
-              </h1>
+              <img
+                src="/home-logo.png"
+                alt="AJ MART"
+                className="h-[45px] w-auto object-contain"
+              />
             </Link>
           </div>
           <div

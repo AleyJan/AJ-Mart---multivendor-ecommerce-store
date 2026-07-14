@@ -122,7 +122,11 @@ const Footer = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:px-8 px-5 py-16 sm:text-center">
         <ul className="px-5 text-center sm:text-start flex sm:block flex-col items-center">
           <Link to="/">
-            <h1 className="mb-1 font-semibold text-[#f0a500] text-2xl">AJ MART</h1>
+            <img
+              src="/home-logo.png"
+              alt="AJ MART"
+              className="h-[60px] w-auto object-contain bg-white rounded-md p-1 mb-1"
+            />
           </Link>
           <p>The home and elements needed to create beautiful products.</p>
           <div className="flex items-center mt-[15px]">

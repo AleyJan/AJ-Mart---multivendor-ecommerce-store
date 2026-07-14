@@ -2,15 +2,15 @@
 
 ## Project Overview
 
-| | |
-|---|---|
-| **Project Name** | AJ MART |
-| **One-liner** | A multi-vendor marketplace that lets independent sellers run their own storefronts, accept Stripe payments, and chat with buyers in real time — all managed under a single admin panel. |
-| **GitHub** | [Repository](https://github.com/AleyJan/week_1) |
-| **Live Demo** | Demo coming soon |
-| **Team Size** | 1 person |
-| **Your Role** | Full-stack — architecture, backend API, frontend UI, auth, payments, real-time, admin panel |
-| **Timeline** | 1 week, full-time (Dev Weekends Week 1) |
+|                  |                                                                                                                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Project Name** | AJ MART                                                                                                                                                                                 |
+| **One-liner**    | A multi-vendor marketplace that lets independent sellers run their own storefronts, accept Stripe payments, and chat with buyers in real time — all managed under a single admin panel. |
+| **GitHub**       | [Repository](https://github.com/AleyJan/AJ-Mart---multivendor-ecommerce-store.git)                                                                                                      |
+| **Live Demo**    | https://aj-mart-multivendor-ecommerce-store-sepia.vercel.app/                                                                                                                           |
+| **Team Size**    | 1 person                                                                                                                                                                                |
+| **Your Role**    | Full-stack — architecture, backend API, frontend UI, auth, payments, real-time, admin panel                                                                                             |
+|                  |
 
 ---
 
@@ -25,9 +25,11 @@
 ### Non-Goals (Scope Boundaries)
 
 - **Mobile app:** 100 % of the UI is desktop/responsive web. A React Native client is deferred.
-- **Cloud image storage (Cloudinary/S3):** Images are stored on local disk via Multer. A CDN-backed storage layer is a clear v2 upgrade but was out of scope for the one-week timeline.
 - **Real-time inventory reservation:** Stock is decremented at order creation, not at cart-add time. A flash-sale reservation system with TTLs is a known gap for high-concurrency scenarios.
-- **Email notifications for order updates:** Activation emails are sent; transactional order status emails are v2.
+- **Real Stripe saved cards:** Saved payment methods store only the card brand, last 4 digits, and expiry, and the "default card" checkout path is a mock (no charge) — Stripe SetupIntents / off-session charging is deferred.
+- **Transactional order-status emails:** Activation, password-reset, and new-event (newsletter) emails are sent; per-order "Shipped/Delivered" emails are v2.
+
+> **Delivered after the initial build:** Cloudinary CDN image storage (replacing local disk), buyer profile/address/payment management, forgot-password for both roles, a Fiverr-style role switch with email-match enforcement, product editing, a newsletter with event notifications, and split-Vercel serverless deployment.
 
 ---
 
@@ -35,18 +37,18 @@
 
 ### Tech Stack
 
-| Layer | Technology | Why We Chose It | What We Considered |
-|---|---|---|---|
-| **Frontend** | React 18 + Vite | Fast HMR, large ecosystem, component model maps cleanly to the multi-role UI | Next.js — rejected because SSR was not needed; the app is auth-gated and not SEO-critical |
-| **State** | Redux Toolkit | Cart and wishlist need to persist across routes and survive page refreshes via localStorage; Redux middleware makes this straightforward | React Context — insufficient for cross-cutting state like cart items that multiple unrelated components write to |
-| **Styling** | Tailwind CSS | Utility classes allow fast iteration without context-switching to a CSS file | Styled-components — overhead of a runtime CSS-in-JS library was unjustified for this scope |
-| **Backend** | Node.js + Express | Same language as the frontend, minimal boilerplate, strong Mongoose integration | NestJS — adds structure but the learning curve was a poor trade-off for a one-week build |
-| **Database** | MongoDB Atlas + Mongoose | The product/order data models are document-shaped (embedded reviews, embedded cart items in orders); Atlas provides a free managed tier | PostgreSQL — relational guarantees matter for payment data, but Stripe owns the payment of record; our order document doesn't need ACID across tables |
-| **Auth** | JWT in HttpOnly cookies | Stateless, no server-side session store needed; HttpOnly prevents XSS token theft; two separate cookies (`token`, `seller_token`) for dual-role support | Sessions with Redis — adds infrastructure complexity with no benefit at this scale |
-| **File uploads** | Multer (disk storage) | Zero external dependency, instant setup, files served as Express static assets | Cloudinary — better for production (CDN, transformations) but introduces an external API dependency and cost for a week-1 project |
-| **Payments** | Stripe PaymentIntents | PCI-compliant card handling entirely in Stripe's iframe; PaymentIntent flow supports 3DS and is the current Stripe recommendation | PayPal — smaller developer community, weaker React SDK |
-| **Real-time** | Socket.io | Handles WebSocket with automatic fallback to long-polling; rooms/namespaces map to conversation participants | Firebase Realtime Database — vendor lock-in, and we already had a Node server that could host the WebSocket |
-| **Email** | Nodemailer + Gmail SMTP | Free, zero infrastructure, App Passwords avoid storing the real account password | SendGrid — better for production volume but requires account setup and API keys |
+| Layer            | Technology                   | Why We Chose It                                                                                                                                                                                       | What We Considered                                                                                                                                                     |
+| ---------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend**     | React 18 + Vite              | Fast HMR, large ecosystem, component model maps cleanly to the multi-role UI                                                                                                                          | Next.js — rejected because SSR was not needed; the app is auth-gated and not SEO-critical                                                                              |
+| **State**        | Redux Toolkit                | Cart and wishlist need to persist across routes and survive page refreshes via localStorage; Redux middleware makes this straightforward                                                              | React Context — insufficient for cross-cutting state like cart items that multiple unrelated components write to                                                       |
+| **Styling**      | Tailwind CSS                 | Utility classes allow fast iteration without context-switching to a CSS file                                                                                                                          | Styled-components — overhead of a runtime CSS-in-JS library was unjustified for this scope                                                                             |
+| **Backend**      | Node.js + Express            | Same language as the frontend, minimal boilerplate, strong Mongoose integration                                                                                                                       | NestJS — adds structure but the learning curve was a poor trade-off for a one-week build                                                                               |
+| **Database**     | MongoDB Atlas + Mongoose     | The product/order data models are document-shaped (embedded reviews, embedded cart items in orders); Atlas provides a free managed tier                                                               | PostgreSQL — relational guarantees matter for payment data, but Stripe owns the payment of record; our order document doesn't need ACID across tables                  |
+| **Auth**         | JWT in HttpOnly cookies      | Stateless, no server-side session store needed; HttpOnly prevents XSS token theft; two separate cookies (`token`, `seller_token`) for dual-role support                                               | Sessions with Redis — adds infrastructure complexity with no benefit at this scale                                                                                     |
+| **File uploads** | Multer (memory) + Cloudinary | Serverless hosts (Vercel) have a read-only, ephemeral filesystem, so local disk storage isn't viable in production; buffers are streamed straight to Cloudinary's CDN with automatic delete-on-remove | Local disk via Multer — the original approach; abandoned once deployment revealed the read-only filesystem. AWS S3 — heavier setup than Cloudinary for the same result |
+| **Payments**     | Stripe PaymentIntents        | PCI-compliant card handling entirely in Stripe's iframe; PaymentIntent flow supports 3DS and is the current Stripe recommendation                                                                     | PayPal — smaller developer community, weaker React SDK                                                                                                                 |
+| **Real-time**    | Socket.io                    | Handles WebSocket with automatic fallback to long-polling; rooms/namespaces map to conversation participants                                                                                          | Firebase Realtime Database — vendor lock-in, and we already had a Node server that could host the WebSocket                                                            |
+| **Email**        | Nodemailer + Gmail SMTP      | Free, zero infrastructure, App Passwords avoid storing the real account password                                                                                                                      | SendGrid — better for production volume but requires account setup and API keys                                                                                        |
 
 ### Architecture Diagram
 
@@ -65,18 +67,20 @@
 │  /api/v2/order       /api/v2/coupon                       │
 │  /api/v2/conversation /api/v2/message                     │
 │  /api/v2/payment     /api/v2/withdraw                     │
-│  /uploads (static files — Multer disk storage)           │
+│  /api/v2/subscriber                                       │
 │                                                           │
 │  Middleware stack:                                        │
 │    cors → cookieParser → express.json → routes → errors   │
-└──────────┬────────────────────┬──────────────────────────┘
-           │                    │
-    ┌──────▼──────┐     ┌───────▼────────┐
-    │ MongoDB     │     │   Stripe API   │
-    │ Atlas       │     │ (PaymentIntent)│
-    │ (Mongoose)  │     └────────────────┘
-    └─────────────┘
+└──────┬──────────────┬───────────────┬────────────────────┘
+       │              │               │
+┌──────▼──────┐ ┌─────▼──────┐ ┌──────▼────────┐
+│ MongoDB     │ │ Cloudinary │ │   Stripe API  │
+│ Atlas       │ │  (images)  │ │ (PaymentIntent)│
+│ (Mongoose)  │ └────────────┘ └───────────────┘
+└─────────────┘
 ```
+
+> Deployed as two Vercel projects — a static frontend and the Express app as a serverless function (`backend/api/index.js`) that reuses a cached Mongoose connection across warm invocations. Auth cookies are `SameSite=None; Secure` in production so they survive the cross-domain frontend↔backend split.
 
 ---
 
@@ -88,12 +92,15 @@
 - **Dual-cookie architecture** — buyers get a `token` cookie, sellers get a `seller_token` cookie. Both are HttpOnly and signed with the same `JWT_SECRET_KEY`. Separate middleware (`isAuthenticated`, `isSeller`) guards each domain's routes.
 - **Role-based admin guard** — `isAdmin("Admin")` checks `req.user.role === "Admin"`. Privilege escalation is impossible from the seller path because the seller cookie's JWT payload only contains the shop ID, resolved against the `Shop` collection — not the `User` collection.
 - **Admin auto-seeding** — credentials live in `.env`. On every server start, after DB connect, the seed function checks for the admin email and creates the account only if it does not exist. No manual terminal command needed.
+- **Password reset** — buyers and sellers can request a reset. The server stores a SHA-256 hash of a random token with a 15-minute expiry and emails the raw token in a link. The reset endpoint matches the hashed token, checks expiry, and sets the new password (re-hashed by the `pre("save")` hook).
+- **Fiverr-style role switch with email-match enforcement** — because buyer (`token`) and seller (`seller_token`) sessions are independent, a switch button routes by the logged-in person's own email (via `/user/exists` and `/shop/exists`): matching account → the dashboard, else → the correct login or registration. The seller dashboard (`useSellerAccess`) only renders when the seller session's email matches the logged-in buyer's, so a stale/other session can never leak another person's store.
 
 ### Product & Event Catalog
 
-- **Multi-image upload** — sellers upload multiple images per product via a single multipart POST. Multer writes each to `backend/uploads/`; the server stores `{public_id: filename, url: "uploads/filename"}` per image. On product delete, each file is removed from disk (`fs.unlink`).
-- **Timed sale events** — events have `startDate`, `endDate`, and a `status` field. The frontend renders a live countdown (`CountDown.jsx`) per event card. Events have their own catalog separate from the main product list.
-- **Review system** — authenticated buyers can post one review per product per order. A re-review updates the existing entry rather than duplicating. After saving, the server recomputes `product.ratings` as the average of all review scores and marks the order line item as `isReviewed: true`.
+- **Multi-image upload to Cloudinary** — sellers upload multiple images per product via a single multipart POST. Multer buffers each file in memory and streams it to Cloudinary (`upload_stream`); the server stores `{ public_id, url }` (the `secure_url`) per image. On product delete or image replacement, the old assets are removed with `cloudinary.uploader.destroy`. Buyer-facing product cards render the images in a **slider** with arrows and dots.
+- **Product editing** — sellers can edit any field of a product. The create form is dual-mode (`/dashboard-edit-product/:id`), preloads the product via `GET /get-product/:id`, and only replaces images when new ones are uploaded. The discount price is optional — if omitted, the regular price is used with no strikethrough.
+- **Timed sale events** — events have `startDate`, `endDate`, and a `status` field. The frontend renders a live countdown (`CountDown.jsx`) per event card. Events have their own catalog separate from the main product list. **Creating an event emails every newsletter subscriber.**
+- **Review system** — authenticated buyers can post one review per product per order. A re-review updates the existing entry rather than duplicating. After saving, the server recomputes `product.ratings` as the average of all review scores and marks the order line item as `isReviewed: true`. Shop ratings on product pages are computed from all of a shop's reviews.
 
 ### Cart, Checkout, and Payments
 
@@ -108,6 +115,18 @@
 - **Withdraw flow** — sellers request a payout amount up to their available balance. The balance is deducted immediately on request creation. Admins approve via a PUT endpoint, which sets status to `"succeed"` and appends a transaction record to the shop's `transactions[]` array.
 - **Refund management** — buyers set order status to `"Processing refund"`. Sellers see it in their refund tab and can approve, which sets status to `"Refund Success"` and restores stock (`product.stock += qty`).
 - **Coupon codes** — sellers create named coupons with a percentage discount value. Buyers enter a coupon name at checkout; the frontend fetches `/api/v2/coupon/get-coupon/:name` and applies the discount locally before the payment step.
+
+### Buyer Account Management
+
+- **Profile & avatar** — buyers edit their name, email (uniqueness-checked), and phone, and change their avatar (streamed to Cloudinary, old asset destroyed). The store refreshes via `loadUser()` after each change.
+- **Saved addresses** — one address per type (Default / Home / Office); adding an existing type updates it in place. Managed from a dedicated Address tab.
+- **Saved payment methods** — buyers save cards storing only brand, last 4 digits, and expiry (never the full number or CVV), with one marked default. At the payment step a "Pay with saved card" option preselects the default and places the order as a mock charge (Stripe's iframe fields can't be programmatically prefilled).
+
+### Newsletter & Subscribers
+
+- **Subscribe** — the footer form posts an email to `/subscriber/subscribe`, stored de-duped in the `subscribedemails` collection.
+- **Event notifications** — after a seller creates an event, the server emails all subscribers (best-effort, `Promise.allSettled`) with a per-recipient **unsubscribe** link (`/unsubscribe?email=…` → idempotent `PUT /unsubscribe`).
+- **Admin management** — admins list and remove subscribers from a dedicated dashboard tab.
 
 ### Real-Time Messaging (Socket.io)
 
@@ -127,41 +146,41 @@
 
 ### Users
 
-| Method | Endpoint | Description | Notes |
-|---|---|---|---|
-| `POST` | `/api/v2/user/create-user` | Register with avatar upload | Multipart; duplicate email → file cleaned up, 400 returned |
-| `POST` | `/api/v2/user/activation` | Activate from email token | Token expires in 5 min; re-registration required after expiry |
-| `POST` | `/api/v2/user/login-user` | Authenticate buyer | Sets `token` HttpOnly cookie |
-| `GET` | `/api/v2/user/getuser` | Load session user | Guarded by `isAuthenticated` |
-| `GET` | `/api/v2/user/logout` | Clear cookie | Expires `token` cookie immediately |
-| `GET` | `/api/v2/user/admin-all-users` | List all users | Guarded by `isAuthenticated + isAdmin` |
-| `DELETE` | `/api/v2/user/delete-user/:id` | Hard delete user | Admin only |
+| Method   | Endpoint                       | Description                 | Notes                                                         |
+| -------- | ------------------------------ | --------------------------- | ------------------------------------------------------------- |
+| `POST`   | `/api/v2/user/create-user`     | Register with avatar upload | Multipart; duplicate email → file cleaned up, 400 returned    |
+| `POST`   | `/api/v2/user/activation`      | Activate from email token   | Token expires in 5 min; re-registration required after expiry |
+| `POST`   | `/api/v2/user/login-user`      | Authenticate buyer          | Sets `token` HttpOnly cookie                                  |
+| `GET`    | `/api/v2/user/getuser`         | Load session user           | Guarded by `isAuthenticated`                                  |
+| `GET`    | `/api/v2/user/logout`          | Clear cookie                | Expires `token` cookie immediately                            |
+| `GET`    | `/api/v2/user/admin-all-users` | List all users              | Guarded by `isAuthenticated + isAdmin`                        |
+| `DELETE` | `/api/v2/user/delete-user/:id` | Hard delete user            | Admin only                                                    |
 
 ### Products
 
-| Method | Endpoint | Description | Notes |
-|---|---|---|---|
-| `POST` | `/api/v2/product/create-product` | Create product | `upload.array("images")` — multiple files |
-| `GET` | `/api/v2/product/get-all-products` | Public product list | Sorted by `createdAt` desc |
-| `GET` | `/api/v2/product/get-all-products-shop/:id` | Shop-scoped products | No auth — public shop pages use this |
-| `DELETE` | `/api/v2/product/delete-shop-product/:id` | Delete product + images | Guarded by `isSeller`; disk files unlinked |
-| `PUT` | `/api/v2/product/create-new-review` | Upsert product review | Guarded by `isAuthenticated`; recomputes average rating; marks order item |
+| Method   | Endpoint                                    | Description             | Notes                                                                     |
+| -------- | ------------------------------------------- | ----------------------- | ------------------------------------------------------------------------- |
+| `POST`   | `/api/v2/product/create-product`            | Create product          | `upload.array("images")` — multiple files                                 |
+| `GET`    | `/api/v2/product/get-all-products`          | Public product list     | Sorted by `createdAt` desc                                                |
+| `GET`    | `/api/v2/product/get-all-products-shop/:id` | Shop-scoped products    | No auth — public shop pages use this                                      |
+| `DELETE` | `/api/v2/product/delete-shop-product/:id`   | Delete product + images | Guarded by `isSeller`; disk files unlinked                                |
+| `PUT`    | `/api/v2/product/create-new-review`         | Upsert product review   | Guarded by `isAuthenticated`; recomputes average rating; marks order item |
 
 ### Orders
 
-| Method | Endpoint | Description | Notes |
-|---|---|---|---|
-| `POST` | `/api/v2/order/create-order` | Create orders from cart | Splits by shopId; cart items without shopId (demo data) are skipped |
-| `PUT` | `/api/v2/order/update-order-status/:id` | Seller updates status | On "Delivered": credits seller balance at 90 %, marks payment succeeded |
-| `PUT` | `/api/v2/order/order-refund/:id` | Buyer requests refund | Sets status to "Processing refund" |
-| `PUT` | `/api/v2/order/order-refund-success/:id` | Seller approves refund | Restores stock; sets status to "Refund Success" |
+| Method | Endpoint                                 | Description             | Notes                                                                   |
+| ------ | ---------------------------------------- | ----------------------- | ----------------------------------------------------------------------- |
+| `POST` | `/api/v2/order/create-order`             | Create orders from cart | Splits by shopId; cart items without shopId (demo data) are skipped     |
+| `PUT`  | `/api/v2/order/update-order-status/:id`  | Seller updates status   | On "Delivered": credits seller balance at 90 %, marks payment succeeded |
+| `PUT`  | `/api/v2/order/order-refund/:id`         | Buyer requests refund   | Sets status to "Processing refund"                                      |
+| `PUT`  | `/api/v2/order/order-refund-success/:id` | Seller approves refund  | Restores stock; sets status to "Refund Success"                         |
 
 ### Payment
 
-| Method | Endpoint | Description | Notes |
-|---|---|---|---|
-| `POST` | `/api/v2/payment/process` | Create Stripe PaymentIntent | `amount` in cents; returns `client_secret` |
-| `GET` | `/api/v2/payment/stripeapikey` | Publishable key for frontend | Safe to expose — Stripe publishable keys are public by design |
+| Method | Endpoint                       | Description                  | Notes                                                         |
+| ------ | ------------------------------ | ---------------------------- | ------------------------------------------------------------- |
+| `POST` | `/api/v2/payment/process`      | Create Stripe PaymentIntent  | `amount` in cents; returns `client_secret`                    |
+| `GET`  | `/api/v2/payment/stripeapikey` | Publishable key for frontend | Safe to expose — Stripe publishable keys are public by design |
 
 ---
 
@@ -292,19 +311,20 @@ Buyer Browser          Socket.io Server         Seller Browser
 
 ## Challenges and Solutions
 
-| # | Challenge | Why It Was Hard | Alternatives Considered | Solution | Trade-off |
-|---|---|---|---|---|---|
-| 1 | Dual-role auth (buyer + seller) on the same domain | A user can also be a seller; cookies from both roles coexist and must not interfere | Single cookie with role claim — ambiguous when a user has both roles | Two separate cookies (`token`, `seller_token`) resolved by separate middleware | Two round-trips on pages that need both identities; manageable at this scale |
-| 2 | Order splitting by shop in a single checkout | Cart can contain items from multiple sellers; each seller must see only their own orders | One order document with all items — sellers would need to filter a shared document | Group cart by `shopId` server-side; create one `Order` per shop | More documents per checkout; `admin-all-orders` returns the full set cleanly |
-| 3 | Stock not atomically decremented | Two simultaneous orders for the last item could both decrement, driving stock negative | Mongoose transactions (requires replica set or Atlas M10+); pessimistic locks | Clamp at zero: `stock = Math.max(0, stock - qty)` | Over-selling is possible under concurrency; acceptable for week-1 scope; v2 solution is a reservation TTL system |
-| 4 | Image cleanup on product/user delete | Orphaned files accumulate on disk if the DB delete succeeds but `fs.unlink` fails | Cloudinary with server-side delete — moves the problem to a managed service | `fs.unlink` called after `deleteOne()`; errors are swallowed (logged, not thrown) | Silent failures on file removal; a cleanup cron job is the proper v2 fix |
-| 5 | Admin account setup without a UI | Exposing a `/create-admin` endpoint is a security risk; manual DB insertion is brittle | A one-time setup script run via CLI | `ADMIN_*` vars in `.env`; seed function runs in `connectDatabase().then(seedAdmin)` — idempotent | Admin credentials are in a file on disk; must be rotated and the `.env` must never be committed |
+| #   | Challenge                                          | Why It Was Hard                                                                          | Alternatives Considered                                                            | Solution                                                                                         | Trade-off                                                                                                        |
+| --- | -------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| 1   | Dual-role auth (buyer + seller) on the same domain | A user can also be a seller; cookies from both roles coexist and must not interfere      | Single cookie with role claim — ambiguous when a user has both roles               | Two separate cookies (`token`, `seller_token`) resolved by separate middleware                   | Two round-trips on pages that need both identities; manageable at this scale                                     |
+| 2   | Order splitting by shop in a single checkout       | Cart can contain items from multiple sellers; each seller must see only their own orders | One order document with all items — sellers would need to filter a shared document | Group cart by `shopId` server-side; create one `Order` per shop                                  | More documents per checkout; `admin-all-orders` returns the full set cleanly                                     |
+| 3   | Stock not atomically decremented                   | Two simultaneous orders for the last item could both decrement, driving stock negative   | Mongoose transactions (requires replica set or Atlas M10+); pessimistic locks      | Clamp at zero: `stock = Math.max(0, stock - qty)`                                                | Over-selling is possible under concurrency; acceptable for week-1 scope; v2 solution is a reservation TTL system |
+| 4   | Image cleanup on product/user delete               | Orphaned files accumulate on disk if the DB delete succeeds but `fs.unlink` fails        | Cloudinary with server-side delete — moves the problem to a managed service        | `fs.unlink` called after `deleteOne()`; errors are swallowed (logged, not thrown)                | Silent failures on file removal; a cleanup cron job is the proper v2 fix                                         |
+| 5   | Admin account setup without a UI                   | Exposing a `/create-admin` endpoint is a security risk; manual DB insertion is brittle   | A one-time setup script run via CLI                                                | `ADMIN_*` vars in `.env`; seed function runs in `connectDatabase().then(seedAdmin)` — idempotent | Admin credentials are in a file on disk; must be rotated and the `.env` must never be committed                  |
 
 ### Deep Dive: Order Splitting by Shop
 
 **The Problem:** When a buyer checks out a cart containing products from Shop A and Shop B, the naive approach is one `Order` document with all items mixed together. This means Shop A's seller would have to filter the shared document to find their items — a fragile pattern that breaks the seller isolation model.
 
 **Investigation:** Mapped out the data access patterns before writing any code:
+
 - Sellers query orders by `cart.shopId`
 - Buyers query orders by `user._id`
 - Admin queries all orders
@@ -316,14 +336,20 @@ Buyer Browser          Socket.io Server         Seller Browser
 const shopItemsMap = new Map();
 for (const item of cart) {
   const shopId = item.shopId;
-  if (!shopId) continue;          // skip demo/static items
+  if (!shopId) continue; // skip demo/static items
   if (!shopItemsMap.has(shopId)) shopItemsMap.set(shopId, []);
   shopItemsMap.get(shopId).push(item);
 }
 
 for (const [, items] of shopItemsMap) {
   const totalPrice = items.reduce((acc, i) => acc + i.discountPrice * i.qty, 0);
-  await Order.create({ cart: items, shippingAddress, user, totalPrice, paymentInfo });
+  await Order.create({
+    cart: items,
+    shippingAddress,
+    user,
+    totalPrice,
+    paymentInfo,
+  });
 }
 ```
 
@@ -367,18 +393,18 @@ for (const [, items] of shopItemsMap) {
 
 ## Results and Metrics
 
-| Metric | Value | Notes |
-|---|---|---|
-| **API response time (login)** | ~120 ms | Measured locally; includes bcrypt compare + JWT sign |
-| **Admin seed check on startup** | < 50 ms | Single `findOne` query after DB connect |
-| **Image upload (single)** | < 200 ms | Multer disk write; no external API call |
-| **Stripe PaymentIntent creation** | ~400 ms | Network round-trip to Stripe API |
-| **Full checkout flow** | < 1 s | PaymentIntent + order creation combined |
-| **Socket.io message delivery** | < 30 ms | LAN; WebSocket relay with no DB write on delivery |
-| **Routes implemented** | 40+ | Across 10 domain controllers |
-| **React components** | 80+ | Pages, layout, domain-specific components |
+| Metric                            | Value    | Notes                                                |
+| --------------------------------- | -------- | ---------------------------------------------------- |
+| **API response time (login)**     | ~120 ms  | Measured locally; includes bcrypt compare + JWT sign |
+| **Admin seed check on startup**   | < 50 ms  | Single `findOne` query after DB connect              |
+| **Image upload (single)**         | < 200 ms | Multer disk write; no external API call              |
+| **Stripe PaymentIntent creation** | ~400 ms  | Network round-trip to Stripe API                     |
+| **Full checkout flow**            | < 1 s    | PaymentIntent + order creation combined              |
+| **Socket.io message delivery**    | < 30 ms  | LAN; WebSocket relay with no DB write on delivery    |
+| **Routes implemented**            | 40+      | Across 10 domain controllers                         |
+| **React components**              | 80+      | Pages, layout, domain-specific components            |
 
-*All measurements taken on localhost with MongoDB Atlas free tier (M0) in the same region.*
+_All measurements taken on localhost with MongoDB Atlas free tier (M0) in the same region._
 
 ---
 
@@ -410,6 +436,5 @@ for (const [, items] of shopItemsMap) {
 
 ## Links
 
-- **GitHub:** Repository (see repo root)
-- **Screenshots:** Available in project root — `landing_pag.PNG`, `seller-dashboard.PNG`, `checkout.PNG`, `product detail page.PNG`, `profile page.PNG`
+- **GitHub:** Repository (https://github.com/AleyJan/AJ-Mart---multivendor-ecommerce-store)
 - **README:** Full setup, API reference, and database schema — see `README.md` in this repo
